@@ -13,6 +13,7 @@ const WeeksPage = () => {
     end_date: '',
     result_url: ''
   });
+  const [editingWeek, setEditingWeek] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
 
   useEffect(() => {
@@ -55,6 +56,23 @@ const WeeksPage = () => {
     } catch (error) {
       setError('Қате тақырыптық аптаны қосқанда!');
       console.error('Error adding week:', error);
+    }
+  };
+
+  const handleEditWeek = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.put(
+        `${API_ENDPOINTS.ADMIN.THEME_WEEKS}/${editingWeek.id}`,
+        editingWeek,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setWeeks(weeks.map(w => w.id === editingWeek.id ? response.data : w));
+      setEditingWeek(null);
+    } catch (error) {
+      setError('Қате тақырыптық аптаны өзгерткенде!');
+      console.error('Error editing week:', error);
     }
   };
 
@@ -160,6 +178,77 @@ const WeeksPage = () => {
         </form>
       )}
 
+      {editingWeek && (
+        <form onSubmit={handleEditWeek} className="mb-8 p-6 bg-gray-50 rounded-lg">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Тақырып</label>
+              <input
+                type="text"
+                value={editingWeek.title}
+                onChange={(e) => setEditingWeek({...editingWeek, title: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Нәтиже URL</label>
+              <input
+                type="url"
+                value={editingWeek.result_url}
+                onChange={(e) => setEditingWeek({...editingWeek, result_url: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Басталу күні</label>
+              <input
+                type="date"
+                value={editingWeek.start_date}
+                onChange={(e) => setEditingWeek({...editingWeek, start_date: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Аяқталу күні</label>
+              <input
+                type="date"
+                value={editingWeek.end_date}
+                onChange={(e) => setEditingWeek({...editingWeek, end_date: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                required
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Сипаттама</label>
+              <textarea
+                value={editingWeek.description}
+                onChange={(e) => setEditingWeek({...editingWeek, description: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                rows="3"
+              />
+            </div>
+          </div>
+          <div className="mt-6 flex justify-end gap-4">
+            <button
+              type="button"
+              onClick={() => setEditingWeek(null)}
+              className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+            >
+              Болдырмау
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+            >
+              Сақтау
+            </button>
+          </div>
+        </form>
+      )}
+
       <div className="bg-white rounded-xl shadow overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full text-left">
@@ -190,7 +279,13 @@ const WeeksPage = () => {
                       Нәтижені көру
                     </a>
                   </td>
-                  <td className="py-3 px-4">
+                  <td className="py-3 px-4 space-x-2">
+                    <button
+                      onClick={() => setEditingWeek(w)}
+                      className="px-3 py-1 rounded-lg text-sm bg-blue-100 text-blue-800 hover:bg-blue-200"
+                    >
+                      Өзгерту
+                    </button>
                     <button
                       onClick={() => handleDeleteWeek(w.id)}
                       className="px-3 py-1 rounded-lg text-sm bg-red-100 text-red-800 hover:bg-red-200"
@@ -208,4 +303,4 @@ const WeeksPage = () => {
   );
 };
 
-export default WeeksPage; 
+export default WeeksPage;

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_ENDPOINTS, APP_CONFIG } from '../config';
 import axios from 'axios';
+import logo from '../assets/logo.png';
 
 const TABS = [
   { key: 'users', label: 'Пайдаланушылар' },
@@ -156,7 +157,7 @@ const AdminPanel = () => {
       <header className="bg-white shadow">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center">
-            <img src={APP_CONFIG.LOGO_PATH} alt="Logo" className="h-10 w-auto" />
+            <img src={logo} alt="Lofgo" className="h-10 w-auto" />
             <span className="ml-3 text-xl font-bold">{APP_CONFIG.APP_NAME}</span>
           </div>
           <div className="flex items-center space-x-4">

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_ENDPOINTS, APP_CONFIG } from '../config';
 import axios from 'axios';
+import logo from '../assets/logo.png';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ const LoginPage = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-300">
       <div className="bg-white rounded-2xl shadow-xl p-10 w-full max-w-md">
         <div className="flex flex-col items-center mb-6">
-          <img src={APP_CONFIG.LOGO_PATH} alt="Logo" className="h-14 mb-2" />
+          <img src={logo} alt="Logo" className="h-14 mb-2" />
           <h2 className="text-2xl font-bold text-gray-800">Админге кіру</h2>
         </div>
         <form onSubmit={handleSubmit} className="space-y-6">

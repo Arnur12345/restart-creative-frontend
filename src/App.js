@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import LandingPage from './components/LandingPage';
 import LoginPage from './components/LoginPage';
-import RegisterPage from './components/RegisterPage';
 import ThemeWeeks from './components/ThemeWeeks';
 import Layout from './components/Layout';
 import WeekLandingPage from './components/WeekLandingPage';
@@ -23,7 +22,6 @@ function App() {
           <Route path="/theme-weeks/:id" element={<WeekLandingPage />} />
         </Route>
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
         <Route path="/admin" element={<AdminPanel token={token} />}> 
           <Route element={<AdminLayout />}>
             <Route path="users" element={<UsersPage />} />
