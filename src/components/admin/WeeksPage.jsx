@@ -2,6 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { API_ENDPOINTS } from '../../config';
 import axios from 'axios';
 
+const CLOUDINARY_CONFIG = {
+  cloudinaryUrl: 'https://api.cloudinary.com/v1_1/dq2pbzrtu/image/upload',
+  cloudinaryPreset: 'adilgazy',
+  cloudinaryCloudName: 'dq2pbzrtu'
+};
+
 const WeeksPage = () => {
   const [weeks, setWeeks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,10 +17,15 @@ const WeeksPage = () => {
     description: '',
     start_date: '',
     end_date: '',
-    result_url: ''
+    result_url: '',
+    image_url: ''
   });
   const [editingWeek, setEditingWeek] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [editSelectedFile, setEditSelectedFile] = useState(null);
+  const [editUploadProgress, setEditUploadProgress] = useState(0);
 
   useEffect(() => {
     fetchWeeks();
@@ -35,13 +46,52 @@ const WeeksPage = () => {
     }
   };
 
+  const uploadToCloudinary = async (file, progressSetter) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_CONFIG.cloudinaryPreset);
+
+    try {
+      const response = await axios.post(CLOUDINARY_CONFIG.cloudinaryUrl, formData, {
+        onUploadProgress: (progressEvent) => {
+          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          progressSetter(progress);
+        }
+      });
+      return response.data.secure_url;
+    } catch (error) {
+      console.error('Error uploading to Cloudinary:', error);
+      throw new Error('Файлды жүктеу кезінде қате пайда болды');
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setSelectedFile(file);
+  };
+
+  const handleEditFileChange = (e) => {
+    const file = e.target.files[0];
+    setEditSelectedFile(file);
+  };
+
   const handleAddWeek = async (e) => {
     e.preventDefault();
     try {
+      let uploadedImageUrl = newWeek.image_url;
+      
+      if (selectedFile) {
+        setLoading(true);
+        uploadedImageUrl = await uploadToCloudinary(selectedFile, setUploadProgress);
+      } else if (!newWeek.image_url) {
+        setError('Апталық суретін таңдаңыз немесе URL енгізіңіз');
+        return;
+      }
+      
       const token = localStorage.getItem('token');
       const response = await axios.post(
         API_ENDPOINTS.ADMIN.THEME_WEEKS,
-        newWeek,
+        { ...newWeek, image_url: uploadedImageUrl },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setWeeks([...weeks, response.data]);
@@ -50,29 +100,45 @@ const WeeksPage = () => {
         description: '',
         start_date: '',
         end_date: '',
-        result_url: ''
+        result_url: '',
+        image_url: ''
       });
+      setSelectedFile(null);
+      setUploadProgress(0);
       setShowAddForm(false);
     } catch (error) {
       setError('Қате тақырыптық аптаны қосқанда!');
       console.error('Error adding week:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleEditWeek = async (e) => {
     e.preventDefault();
     try {
+      let uploadedImageUrl = editingWeek.image_url;
+      
+      if (editSelectedFile) {
+        setLoading(true);
+        uploadedImageUrl = await uploadToCloudinary(editSelectedFile, setEditUploadProgress);
+      }
+      
       const token = localStorage.getItem('token');
       const response = await axios.put(
         `${API_ENDPOINTS.ADMIN.THEME_WEEKS}/${editingWeek.id}`,
-        editingWeek,
+        { ...editingWeek, image_url: uploadedImageUrl },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setWeeks(weeks.map(w => w.id === editingWeek.id ? response.data : w));
       setEditingWeek(null);
+      setEditSelectedFile(null);
+      setEditUploadProgress(0);
     } catch (error) {
       setError('Қате тақырыптық аптаны өзгерткенде!');
       console.error('Error editing week:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -157,6 +223,36 @@ const WeeksPage = () => {
                 required
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Апталық суреті</label>
+              <div className="flex flex-col space-y-2">
+                <input
+                  type="file"
+                  onChange={handleFileChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+                {!selectedFile && (
+                  <input
+                    type="url"
+                    value={newWeek.image_url}
+                    onChange={(e) => setNewWeek({...newWeek, image_url: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    placeholder="Немесе сурет URL-ін енгізіңіз"
+                  />
+                )}
+                {uploadProgress > 0 && (
+                  <div className="mt-2">
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div
+                        className="bg-primary-600 h-2.5 rounded-full"
+                        style={{ width: `${uploadProgress}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">{uploadProgress}% жүктелді</p>
+                  </div>
+                )}
+              </div>
+            </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">Сипаттама</label>
               <textarea
@@ -171,8 +267,9 @@ const WeeksPage = () => {
             <button
               type="submit"
               className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+              disabled={loading}
             >
-              Қосу
+              {loading ? 'Жүктелуде...' : 'Қосу'}
             </button>
           </div>
         </form>
@@ -221,6 +318,37 @@ const WeeksPage = () => {
                 required
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Апталық суреті</label>
+              <div className="flex flex-col space-y-2">
+                <input
+                  type="file"
+                  onChange={handleEditFileChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+                {!editSelectedFile && (
+                  <input
+                    type="url"
+                    value={editingWeek.image_url}
+                    onChange={(e) => setEditingWeek({...editingWeek, image_url: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    placeholder="Немесе сурет URL-ін енгізіңіз"
+                    required
+                  />
+                )}
+                {editUploadProgress > 0 && (
+                  <div className="mt-2">
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div
+                        className="bg-primary-600 h-2.5 rounded-full"
+                        style={{ width: `${editUploadProgress}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">{editUploadProgress}% жүктелді</p>
+                  </div>
+                )}
+              </div>
+            </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">Сипаттама</label>
               <textarea
@@ -242,8 +370,9 @@ const WeeksPage = () => {
             <button
               type="submit"
               className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+              disabled={loading}
             >
-              Сақтау
+              {loading ? 'Жүктелуде...' : 'Сақтау'}
             </button>
           </div>
         </form>
@@ -259,6 +388,7 @@ const WeeksPage = () => {
                 <th className="py-3 px-4 font-semibold text-gray-700">Басталуы</th>
                 <th className="py-3 px-4 font-semibold text-gray-700">Аяқталуы</th>
                 <th className="py-3 px-4 font-semibold text-gray-700">Нәтиже</th>
+                <th className="py-3 px-4 font-semibold text-gray-700">Апталық суреті</th>
                 <th className="py-3 px-4 font-semibold text-gray-700">Әрекеттер</th>
               </tr>
             </thead>
@@ -277,6 +407,16 @@ const WeeksPage = () => {
                       className="text-primary-600 hover:text-primary-700 underline"
                     >
                       Нәтижені көру
+                    </a>
+                  </td>
+                  <td className="py-3 px-4">
+                    <a
+                      href={w.image_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary-600 hover:text-primary-700 underline"
+                    >
+                      Суретті көру
                     </a>
                   </td>
                   <td className="py-3 px-4 space-x-2">

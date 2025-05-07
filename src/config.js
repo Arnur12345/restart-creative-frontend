@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://restart-creative-backend.onrender.com/api';
+const API_BASE_URL = 'https://restart-creative.onrender.com/api';
 
 export const API_ENDPOINTS = {
     AUTH: {
