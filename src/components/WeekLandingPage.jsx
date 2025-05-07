@@ -70,9 +70,6 @@ const WeekLandingPage = () => {
 
   if (!week) return null;
 
-  const winners = materials.filter(m => m.is_winner);
-  const others = materials.filter(m => !m.is_winner);
-
   return (
     <div className="min-h-screen bg-white py-16 px-4">
       <div className="max-w-4xl mx-auto">
@@ -120,19 +117,18 @@ const WeekLandingPage = () => {
             Оқушылардың шығармашылығы
           </h2>
           
+          {/* All Works Section */}
           {materials.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {[...winners, ...others].map((material) => (
+              {materials.map((material) => (
                 <div 
                   key={material.id} 
-                  className={`bg-gray-50 rounded-lg flex flex-col overflow-hidden transition-all duration-200 hover:bg-gray-100 ${
-                    material.is_winner ? 'ring-1 ring-black' : ''
-                  }`}
+                  className={`${material.is_winner ? 'bg-gradient-to-br from-gray-50 to-gray-100 border border-green-200' : 'bg-gray-50'} rounded-lg flex flex-col overflow-hidden transition-all duration-200 hover:shadow-md`}
                 >
                   {/* Winner Badge */}
                   {material.is_winner && (
-                    <div className="absolute top-3 left-3 z-10 bg-black text-white text-xs px-3 py-1 rounded-full flex items-center">
-                      ★ Жеңімпаз
+                    <div className="absolute top-3 left-3 z-10 bg-gradient-to-r from-green-400 to-green-500 text-white text-xs px-3 py-1 rounded-full flex items-center shadow-sm">
+                      <span className="text-green-100 mr-1">★</span> Жеңімпаз
                     </div>
                   )}
                   
@@ -216,7 +212,7 @@ const WeekLandingPage = () => {
                   {/* Information */}
                   <div className="p-5">
                     <div className="flex items-center mb-3">
-                      <span className="text-sm font-medium text-gray-900 mr-auto">
+                      <span className={`text-sm font-medium mr-auto ${material.is_winner ? 'text-green-600' : 'text-gray-900'}`}>
                         {material.student_name}
                       </span>
                       <span className="text-xs text-gray-500">
@@ -236,7 +232,7 @@ const WeekLandingPage = () => {
                       href={material.url} 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="mt-2 text-black hover:underline text-sm font-medium inline-flex items-center"
+                      className={`mt-2 ${material.is_winner ? 'text-green-600' : 'text-black'} hover:underline text-sm font-medium inline-flex items-center`}
                     >
                       Ашу
                       <svg 
@@ -261,6 +257,7 @@ const WeekLandingPage = () => {
           ) : (
             <div className="text-center py-16 bg-gray-50 rounded-lg">
               <p className="text-gray-500">Жұмыстар әлі жоқ</p>
+              <div className="text-xs mt-2 text-gray-400">Бұл блок бос</div>
             </div>
           )}
         </div>
