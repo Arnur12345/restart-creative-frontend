@@ -3,8 +3,7 @@ import { NavLink } from 'react-router-dom';
 
 const links = [
   { to: '/admin/users', label: 'Пайдаланушылар' },
-  { to: '/admin/weeks', label: 'Тақырыптық апталар' },
-  { to: '/admin/videos', label: 'Видеолар' },
+  { to: '/admin/weeks', label: 'Тақырыптық апталар' }
 ];
 
 const AdminSidebar = () => (

@@ -9,7 +9,6 @@ import AdminPanel from './components/admin/AdminPanel';
 import AdminLayout from './components/admin/AdminLayout';
 import UsersPage from './components/admin/UsersPage';
 import WeeksPage from './components/admin/WeeksPage';
-import VideosPage from './components/admin/VideosPage';
 
 function App() {
   const token = localStorage.getItem('token');
@@ -26,7 +25,6 @@ function App() {
           <Route element={<AdminLayout />}>
             <Route path="users" element={<UsersPage />} />
             <Route path="weeks" element={<WeeksPage />} />
-            <Route path="videos" element={<VideosPage />} />
             <Route index element={<Navigate to="users" replace />} />
           </Route>
         </Route>

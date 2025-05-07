@@ -4,14 +4,12 @@ import { API_ENDPOINTS, APP_CONFIG } from '../../config';
 import axios from 'axios';
 import UsersPage from './UsersPage';
 import WeeksPage from './WeeksPage';
-import VideosPage from './VideosPage';
 import MaterialsPage from './MaterialsPage';
 import logo from '../../assets/logo.png';
 
 const TABS = [
   { key: 'users', label: 'Пайдаланушылар' },
   { key: 'weeks', label: 'Тақырыптық апталар' },
-  { key: 'videos', label: 'Видеолар' },
   { key: 'materials', label: 'Материалдар' }
 ];
 
@@ -147,7 +145,6 @@ const AdminPanel = () => {
         <div className="mt-6">
           {tab === 'users' && <UsersPage />}
           {tab === 'weeks' && <WeeksPage />}
-          {tab === 'videos' && <VideosPage />}
           {tab === 'materials' && <MaterialsPage />}
         </div>
       </div>
